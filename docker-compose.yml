@@ -1,0 +1,13 @@
+services:
+  backend:
+    container_name: ${CONTAINER_NAME}
+    image: ${IMAGE_NAME}
+    build:
+      context: "${PWD}/."
+      dockerfile: "${PWD}/Dockerfile"
+    ports:
+      - "8000:8000"
+    env_file:
+      - "${PWD}/.env"
+    volumes:
+      - .:/app:ro # constraining file transfer using dockerignore

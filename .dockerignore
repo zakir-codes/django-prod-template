@@ -1,0 +1,53 @@
+# Ignore Python cache directories
+__pycache__/
+
+# Ignore compiled Python files
+*.pyc
+
+# Ignore virtual environment directories
+.venv/
+env/
+venv/
+
+# Ignore Git related files
+.git
+.gitignore
+
+# Ignore common IDE files
+.vscode/
+.idea/
+
+# Ignore build artifacts and distribution archives
+dist/
+build/
+*.egg-info/
+
+# Ignore pip cache
+pip/
+
+# Ignore pytest cache
+.pytest_cache/
+
+# Ignore coverage reports
+.coverage
+htmlcov/
+
+# Ignore common database files (adjust if you use a different DB file extension)
+*.db
+
+# Ignore log files
+*.log
+
+# Ignore uploaded files or media directories if they are not part of the app code
+media/
+uploads/
+
+# Ignore specific configuration files that might contain secrets
+.env
+config.yaml
+
+# Add any other files or directories specific to your project that should not be included in the image
+notebooks/
+test/
+.docker-compose.yaml
+.dockerignore
