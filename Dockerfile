@@ -1,28 +1,39 @@
+# Production-ready Dockerfile using Poetry and Gunicorn
+
 FROM python:3.12-slim
 
 # Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-# ENV POETRY_HOME="/opt/poetry"
-# ENV PATH="$POETRY_HOME/bin:$PATH"
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
-RUN pip install poetry
-# Set the working directory in the container
+RUN pip install --no-cache-dir poetry
+
+# Set work directory
 WORKDIR /app
 
+# Copy only dependency files first
 COPY pyproject.toml poetry.lock ./
-RUN poetry config virtualenvs.create false && poetry install --no-root
 
-# Copy the rest of the application code into the container
+# Install dependencies without creating a virtualenv
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-root --no-interaction --no-ansi
+
+# Copy rest of the project files
 COPY . .
 
-# Make port 8000 available to the world outside this container
-# Change this if your Django application runs on a different port
-# EXPOSE 8000
+# Collect static files
+RUN python manage.py collectstatic --noinput
 
-# Run your Django application
-# This command uses the development server for demonstration.
-# For production, you should use a production-ready WSGI server like Gunicorn or uWSGI.
-# Example for Gunicorn: CMD ["gunicorn", "--bind", "0.0.0.0:8000", "your_project_name.wsgi:application"]
-CMD ["poetry","run","python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Expose port (optional for Render)
+EXPOSE 8000
+
+# Start with Gunicorn
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--log-file", "-"]
