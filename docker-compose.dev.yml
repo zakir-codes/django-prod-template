@@ -1,0 +1,36 @@
+#### docker-compose.dev.yml ####
+services:
+  backend:
+    container_name: ${CONTAINER_NAME:-django-backend-dev} # Changed for dev
+    image: ${IMAGE_NAME:-django-backend-dev-image} # Changed for dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.dev # Use a local development env file
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.dev # Explicitly set for dev
+    volumes:
+      # Mount as read-write for development to allow hot-reloading/changes
+      - .:/app:rw
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: postgres-db-dev # Changed for dev
+    env_file:
+      - .env.dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-localdb}
+      POSTGRES_USER: ${POSTGRES_USER:-localuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localpass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data # Changed for dev volume
+
+volumes:
+  pgdata_dev: # Changed for dev volume

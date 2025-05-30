@@ -32,8 +32,8 @@ INSTALLED_APPS = [
     "drf_spectacular",
 
     # Local apps
-    "apps.app_1",
-    "apps.app_2",
+    "apps.example_calculator_app",
+    "apps.example_greeter_app",
 ]
 
 # REST Framework

@@ -1,53 +1,85 @@
+#### Makefile ####
 # This Makefile provides a set of convenient commands for managing a Dockerized
 # Django project.
 
-# --- Core Docker Commands ---
+# Define variables for Docker Compose files
+DOCKER_COMPOSE_DEV := docker-compose.dev.yml
+DOCKER_COMPOSE_PROD := docker-compose.prod.yml
 
-# build: Builds the Docker image for the backend service.
+# Default container name (used for run_server/logs if not overridden)
+CONTAINER_NAME_DEV := django-backend-dev
+CONTAINER_NAME_PROD := django-backend-prod
+
+# --- Core Docker Commands (Development) ---
+
+# build-dev: Builds the Docker image for the backend service (dev).
 # --no-cache: Forces a fresh build without using cached layers (useful during development).
-build:
-	@docker compose -f docker-compose.yml build --no-cache backend
+build-dev:
+	@docker compose -f $(DOCKER_COMPOSE_DEV) build --no-cache backend
 
-# up: Starts the backend service container in detached mode.
-# -d: Runs the container in the background.
-up:
-	@docker compose -f docker-compose.yml up backend -d
+cached_build-dev:
+	@docker compose -f $(DOCKER_COMPOSE_DEV) build backend
 
-# down: Stops and removes the backend service container.
-# This also removes default networks created by docker compose.
-down:
-	@docker compose -f docker-compose.yml down backend
+# up-dev: Starts the backend service container in detached mode for development.
+up-dev:
+	@docker compose -f $(DOCKER_COMPOSE_DEV) up backend -d
 
-# run_server: Starts the Django development server inside the running container.
-# This is useful for running the server manually after the container is up,
-# or for debugging startup issues.
-# -it: Keeps stdin open, allowing interaction (like Ctrl+C to stop).
-# ${CONTAINER_NAME}: The name of the running container.
-# poetry run: Executes the command within the container's Poetry virtual environment.
-# python manage.py runserver 0.0.0.0:8000: The standard Django development server command.
-run_server:
-	@docker exec -it ${CONTAINER_NAME} poetry run python manage.py runserver 0.0.0.0:8000
+# down-dev: Stops and removes the backend service container for development.
+down-dev:
+	@docker compose -f $(DOCKER_COMPOSE_DEV) down backend
+
+# run_server-dev: Starts the Django development server inside the running dev container.
+run_server-dev:
+	@docker exec -it $(CONTAINER_NAME_DEV) poetry run python manage.py runserver 0.0.0.0:8000
+
+# logs-dev: Displays the logs for the development container.
+logs-dev:
+	@docker logs -f $(CONTAINER_NAME_DEV)
+
+# --- Core Docker Commands (Production) ---
+
+# build-prod: Builds the Docker image for the backend service (prod).
+# For production, you might not use --no-cache often unless you are debugging the build.
+build-prod:
+	@docker compose -f $(DOCKER_COMPOSE_PROD) build backend
+
+# up-prod: Starts the backend service container in detached mode for production.
+up-prod:
+	@docker compose -f $(DOCKER_COMPOSE_PROD) up backend -d
+
+# down-prod: Stops and removes the backend service container for production.
+down-prod:
+	@docker compose -f $(DOCKER_COMPOSE_PROD) down backend
+
+# logs-prod: Displays the logs for the production container.
+logs-prod:
+	@docker logs -f $(CONTAINER_NAME_PROD)
+
+# --- Database Commands (Adapt for dev/prod if needed) ---
+
+# migrate-dev: Runs Django migrations for development.
+migrate-dev:
+	@docker exec -it $(CONTAINER_NAME_DEV) poetry run python manage.py migrate
+
+# createsuperuser-dev: Creates a Django superuser for development.
+createsuperuser-dev:
+	@docker exec -it $(CONTAINER_NAME_DEV) poetry run python manage.py createsuperuser
+
+# Shell into the development container
+shell-dev:
+	@docker exec -it $(CONTAINER_NAME_DEV) /bin/bash
+
+# --- General Docker Commands ---
 
 # status: Lists all Docker containers (running and stopped).
-# -a: Shows all containers, not just running ones.
 status:
 	@docker ps -a
-
-# logs: Displays the logs for the specified container.
-# ${CONTAINER_NAME}: A variable that needs to be defined elsewhere or replaced with the actual container name.
-logs:
-	@docker logs ${CONTAINER_NAME}
 
 # --- Local Development Command ---
 
 # local-launch: Runs the Django development server locally (outside Docker).
 # This assumes you have a local Python environment with Poetry set up.
-# poetry run: Executes the command within the Poetry virtual environment.
-# python manage.py runserver 0.0.0.0:8000: Starts the Django development server listening on all interfaces on port 8000.
+# IMPORTANT: Ensure your local environment is configured for `config.settings.dev`
+# for this command to work as expected.
 local-launch:
 	@poetry run python manage.py runserver 0.0.0.0:8000
-
-# Note: You might want to add more targets for common Django management commands
-# like `makemigrations`, `migrate`, `createsuperuser`, `test`, etc.,
-# using `docker exec` to run them inside the container.
-

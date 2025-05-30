@@ -1,0 +1,39 @@
+#### docker-compose.prod.yml ####
+services:
+  backend:
+    container_name: ${CONTAINER_NAME:-django-backend-prod} # Changed for prod
+    image: ${IMAGE_NAME:-django-backend-prod-image} # Changed for prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.prod # Use a production env file
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod # Explicitly set for prod
+      # Add other production specific env vars here (e.g., SECRET_KEY, DEBUG=False)
+    # volumes:
+      # For production, you typically don't mount the entire code as a volume
+      # unless you have a specific reason (e.g., hot-fixes).
+      # The code should be baked into the image.
+      # - .:/app:ro # Remove or comment out for production if code is baked into image
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: postgres-db-prod # Changed for prod
+    env_file:
+      - .env.prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-yourdb_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-youruser_prod}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yourpass_prod}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data # Changed for prod volume
+
+volumes:
+  pgdata_prod: # Changed for prod volume
