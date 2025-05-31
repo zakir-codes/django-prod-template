@@ -17,6 +17,7 @@ services:
       - .:/app:rw
     depends_on:
       - db
+    command: poetry run python manage.py runserver 0.0.0.0:8000
 
   db:
     image: postgres:14
