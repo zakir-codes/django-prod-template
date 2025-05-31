@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -6,6 +8,9 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
 
 # Import your serializers
 from .serializers import NumberInputSerializer, ResultOutputSerializer
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 class CalculatorViewSet(ViewSet):
     @extend_schema(
@@ -25,12 +30,20 @@ class CalculatorViewSet(ViewSet):
     )
     @action(detail=False, methods=['post'], url_path='add')
     def add(self, request):
+        logger.info("Received request to add numbers.")
         serializer = NumberInputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        num1 = serializer.validated_data['num1']
-        num2 = serializer.validated_data['num2']
-        result = num1 + num2
-        return Response({'result': result}, status=status.HTTP_200_OK)
+        try:
+            serializer.is_valid(raise_exception=True)
+            num1 = serializer.validated_data['num1']
+            num2 = serializer.validated_data['num2']
+            result = num1 + num2
+            logger.info(f"Successfully added {num1} and {num2}. Result: {result}")
+            return Response({'result': result}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error during addition: {e}", exc_info=True) # exc_info=True sends traceback to Sentry
+            # Re-raise or return an appropriate error response
+            # raise # Sentry will catch this unhandled exception
+            return Response({'error': 'An error occurred during addition'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @extend_schema(
         summary="Subtract two numbers",
@@ -49,9 +62,16 @@ class CalculatorViewSet(ViewSet):
     )
     @action(detail=False, methods=['post'], url_path='subtract')
     def subtract(self, request):
+        logger.info("Received request to subtract numbers.")
         serializer = NumberInputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        num1 = serializer.validated_data['num1']
-        num2 = serializer.validated_data['num2']
-        result = num1 - num2
-        return Response({'result': result}, status=status.HTTP_200_OK)
+        try:
+            serializer.is_valid(raise_exception=True)
+            num1 = serializer.validated_data['num1']
+            num2 = serializer.validated_data['num2']
+            result = num1 - num2
+            logger.info(f"Successfully subtracted {num2} from {num1}. Result: {result}")
+            return Response({'result': result}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error during subtraction: {e}", exc_info=True)
+            # raise # Sentry will catch this unhandled exception
+            return Response({'error': 'An error occurred during addition'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

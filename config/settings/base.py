@@ -132,6 +132,9 @@ if SENTRY_DSN: # Only initialize Sentry if DSN is provided
         environment=SENTRY_ENVIRONMENT,
         send_default_pii=env.bool("SENTRY_SEND_DEFAULT_PII", default=False), # Be careful with PII
         release=SENTRY_RELEASE,
+        _experiments={
+            "enable_logs": True,
+            },
         # Filter out noisy internal frames from your stack traces
         in_app_include=[
             'apps', # Include your 'apps' directory in 'in_app' frames
@@ -144,7 +147,7 @@ if SENTRY_DSN: # Only initialize Sentry if DSN is provided
     import logging
     logger = logging.getLogger(__name__)
     logger.info(f"Sentry SDK initialized for environment: {SENTRY_ENVIRONMENT}, release: {SENTRY_RELEASE}")
-
+    logger.error(f"{DEBUG},{DJANGO_SETTINGS_MODULE}")
 # Apply logging configuration from our function
 # The Sentry handler will be automatically included if SENTRY_DSN is present.
 LOGGING = get_base_logging_config(
