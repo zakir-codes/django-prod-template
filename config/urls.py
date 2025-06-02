@@ -48,6 +48,11 @@ from django.urls import path, include
 
 from drf_spectacular.views import (SpectacularAPIView, SpectacularSwaggerView)
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -63,7 +68,7 @@ urlpatterns = [
     # These paths are explicit, so they won't conflict with the root ('/') swagger UI.
     path('calculator/', include('apps.example_calculator_app.urls')),
     path('greeter/', include('apps.example_greeter_app.urls')),
-
+    path('sentry-debug/', trigger_error),
 
     # You can also add Redoc if you prefer:
     # from drf_spectacular.views import SpectacularRedocView
