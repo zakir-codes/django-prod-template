@@ -49,4 +49,7 @@ EXPOSE 8000
 
 # Command to run the application using Gunicorn
 # Using "exec" form for CMD for better signal handling
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--log-file", "-"]
+# CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--log-file", "-"]
+
+# # Command to run the application using Gunicorn with the config file
+CMD ["gunicorn", "-c", "config/gunicorn_conf.py", "config.wsgi:application"]
